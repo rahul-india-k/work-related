@@ -21,3 +21,14 @@ flag_count_df = (
         ).alias("flag_count")
     )
 )
+
+process_date = "2025-06-30"
+
+headline_news_df = (
+    spark.table("sf_kcs_headline_news")
+    .filter(F.to_date("createddate") <= F.lit(process_date))
+    .withColumn("domain", F.explode(F.split(F.col("VIEWABLE_BY_C"), ";")))
+    .withColumn("date", F.lit(process_date))
+    .groupBy("date", "domain")
+    .agg(F.countDistinct("id").alias("headline_news_count"))
+)
